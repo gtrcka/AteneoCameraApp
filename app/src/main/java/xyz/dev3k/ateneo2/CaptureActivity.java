@@ -1,18 +1,24 @@
 package xyz.dev3k.ateneo2;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.CameraState;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
 import androidx.camera.core.Preview;
+import androidx.camera.core.VideoCapture;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -32,6 +38,7 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
     PreviewView previewView;
     Button imageCaptureButton, videoCaptureButton;
     private ImageCapture imageCapture;
+    private VideoCapture videoCapture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,7 +52,7 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
         videoCaptureButton.setOnClickListener(this);
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(this);
-        cameraProviderFuture.addListener(()->{
+        cameraProviderFuture.addListener(() -> {
             try {
                 ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
                 starCameraX(cameraProvider);
@@ -57,10 +64,11 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
         }, getExecutor());
     }
 
-    private Executor getExecutor(){
+    private Executor getExecutor() {
         return ContextCompat.getMainExecutor(this);
     }
 
+    @SuppressLint("RestrictedApi")
     private void starCameraX(ProcessCameraProvider cameraProvider) {
         cameraProvider.unbindAll();
 
@@ -78,29 +86,42 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
                 .build();
 
-        cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture);
+        //Video capture use case
+        videoCapture = new VideoCapture.Builder()
+                .setVideoFrameRate(30)
+                .build();
+
+        cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture, videoCapture);
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
-    public void onClick(View view){
-        switch(view.getId()){
+    public void onClick(View view) {
+        switch (view.getId()) {
             case R.id.image_capture_button:
                 capturePhoto();
                 break;
             case R.id.video_capture_button:
+                if (videoCaptureButton.getText() == "grabar") {
+                    videoCaptureButton.setText("parar");
+                    recordVideo();
+                }else{
+                    videoCaptureButton.setText("grabar");
+                    videoCapture.stopRecording();
+                }
                 break;
         }
     }
 
     private void capturePhoto() {
         //Directorio donde guarda las fotos
-        File photoDir = new File("/mnt/sdcard/Pictures/");
+        File photoDir = new File("/mnt/sdcard/Pictures/ElAteneoImage");
 
-        if (!photoDir.exists()){
+        if (!photoDir.exists()) {
             photoDir.mkdir();
             Date date = new Date();
             String timestamp = String.valueOf(date.getTime());
-            //afignop el tiempo actual en la foto
+            //asigno el tiempo actual en la foto
             String photoFilePath = photoDir.getAbsolutePath() + "/" + timestamp + ".jpg";
 
             File photoFile = new File(photoFilePath);
@@ -120,6 +141,51 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
                         }
                     }
             );
+        }
+    }
+
+    @SuppressLint("RestrictedApi")
+    private void recordVideo() {
+        if (videoCapture != null) {
+            File moveDir = new File("/mnt/sdcard/Pictures/ElAteneoVideo");
+
+            if (!moveDir.exists()) {
+                moveDir.mkdir();
+
+                Date date = new Date();
+                String timestamp = String.valueOf(date.getTime());
+                //asigno el tiempo actual al video
+                String videoFilePath = moveDir.getAbsolutePath() + "/" + timestamp + ".mp4";
+
+                File videoFile = new File(videoFilePath);
+
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                    // TODO: Consider calling
+                    //    ActivityCompat#requestPermissions
+                    // here to request the missing permissions, and then overriding
+                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                    //                                          int[] grantResults)
+                    // to handle the case where the user grants the permission. See the documentation
+                    // for ActivityCompat#requestPermissions for more details.
+                    return;
+                }
+                videoCapture.startRecording(
+                        new VideoCapture.OutputFileOptions.Builder(videoFile).build(),
+                        getExecutor(),
+                        new VideoCapture.OnVideoSavedCallback() {
+                            @Override
+                            public void onVideoSaved(@NonNull VideoCapture.OutputFileResults outputFileResults) {
+                                Toast.makeText(CaptureActivity.this, "Video guardado", Toast.LENGTH_SHORT).show();
+                            }
+
+                            @Override
+                            public void onError(int videoCaptureError, @NonNull String message, @Nullable Throwable cause) {
+                                Toast.makeText(CaptureActivity.this, "Error al guardar el video: " + message, Toast.LENGTH_SHORT).show();
+                            }
+                        }
+
+                );
+            }
         }
     }
 

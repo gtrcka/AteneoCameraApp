@@ -7,4 +7,5 @@
     <string name="take_photo">Tomar Foto</string>
     <string name="start_capture">Grabar</string>
     <string name="stop_capture">Parar</string>
+    <string name="btn_file_text">File</string>
 </resources>

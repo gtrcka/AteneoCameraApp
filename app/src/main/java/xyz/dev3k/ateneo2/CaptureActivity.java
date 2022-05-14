@@ -23,6 +23,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -50,7 +51,7 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
 
     PreviewView previewView;
-    Button imageCaptureButton, videoCaptureButton;
+    Button imageCaptureButton, videoCaptureButton, fileButton;
     private ImageCapture imageCapture;
     private VideoCapture videoCapture;
     private ImageAnalysis imageAnalysis;
@@ -63,10 +64,12 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
         setContentView(R.layout.activity_capture);
         imageCaptureButton = findViewById(R.id.image_capture_button);
         videoCaptureButton = findViewById(R.id.video_capture_button);
+        fileButton = findViewById(R.id.btn_file);
         previewView = findViewById(R.id.viewFinder);
 
         imageCaptureButton.setOnClickListener(this);
         videoCaptureButton.setOnClickListener(this);
+        fileButton.setOnClickListener(this);
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(this);
         cameraProviderFuture.addListener(() -> {
@@ -132,10 +135,16 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
                     videoCapture.stopRecording();
                 }
                 break;
+            case R.id.btn_file:
+                launchAnalysisActivity();
         }
     }
 
-    private void capturePhoto() {
+    private void launchAnalysisActivity() {
+        Intent intent = new Intent(this, AnalysisActivity.class);
+        startActivity(intent);
+    }
+        private void capturePhoto() {
 
         long timestamp = System.currentTimeMillis();
 

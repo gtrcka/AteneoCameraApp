@@ -113,7 +113,7 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build();
 
-        cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture, /*videoCapture,*/ imageAnalysis);
+        cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture, videoCapture/*, imageAnalysis*/);
     }
 
     @SuppressLint("RestrictedApi")
@@ -167,45 +167,41 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
     @SuppressLint("RestrictedApi")
     private void recordVideo() {
         if (videoCapture != null) {
-            File moveDir = new File("/mnt/sdcard/Pictures/ElAteneoVideo");
+            long timestamp = System.currentTimeMillis();
 
-            if (!moveDir.exists()) {
-                moveDir.mkdir();
-
-                Date date = new Date();
-                String timestamp = String.valueOf(date.getTime());
-                //asigno el tiempo actual al video
-                String videoFilePath = moveDir.getAbsolutePath() + "/" + timestamp + ".mp4";
-
-                File videoFile = new File(videoFilePath);
-
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                    // TODO: Consider calling
-                    //    ActivityCompat#requestPermissions
-                    // here to request the missing permissions, and then overriding
-                    //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-                    //                                          int[] grantResults)
-                    // to handle the case where the user grants the permission. See the documentation
-                    // for ActivityCompat#requestPermissions for more details.
-                    return;
-                }
-                videoCapture.startRecording(
-                        new VideoCapture.OutputFileOptions.Builder(videoFile).build(),
-                        getExecutor(),
-                        new VideoCapture.OnVideoSavedCallback() {
-                            @Override
-                            public void onVideoSaved(@NonNull VideoCapture.OutputFileResults outputFileResults) {
-                                Toast.makeText(CaptureActivity.this, "Video guardado", Toast.LENGTH_SHORT).show();
-                            }
-
-                            @Override
-                            public void onError(int videoCaptureError, @NonNull String message, @Nullable Throwable cause) {
-                                Toast.makeText(CaptureActivity.this, "Error al guardar el video: " + message, Toast.LENGTH_SHORT).show();
-                            }
+            ContentValues contentValues = new ContentValues();
+            contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, timestamp);
+            contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            videoCapture.startRecording(
+                    new VideoCapture.OutputFileOptions.Builder(
+                            getContentResolver(),
+                            MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
+                            contentValues
+                    ).build(),
+                    getExecutor(),
+                    new VideoCapture.OnVideoSavedCallback() {
+                        @Override
+                        public void onVideoSaved(@NonNull VideoCapture.OutputFileResults outputFileResults) {
+                            Toast.makeText(CaptureActivity.this, "Video guardado", Toast.LENGTH_SHORT).show();
                         }
 
-                );
-            }
+                        @Override
+                        public void onError(int videoCaptureError, @NonNull String message, @Nullable Throwable cause) {
+                            Toast.makeText(CaptureActivity.this, "Error al guardar el video: " + message, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+            );
         }
     }
 

@@ -21,6 +21,7 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.Image;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -29,6 +30,8 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.mlkit.vision.common.InputImage;
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
@@ -206,10 +209,14 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     @Override
-    public void analyze(@NonNull ImageProxy image) {
-        Log.d(TAG, "Analizar " + image.getImageInfo().getTimestamp());
-        //setAnalizer(analizer);
-        image.close();
+    public void analyze(ImageProxy imageProxy) {
+        @SuppressLint("UnsafeOptInUsageError") Image mediaImage = imageProxy.getImage();
+        if (mediaImage != null) {
+            InputImage image =
+                    InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
+            // Pass image to an ML Kit Vision API
+            // ...
+        }
     }
 
    /* public void setAnalizer( ImageAnalysis.Analyzer analizer) {

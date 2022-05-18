@@ -1,5 +1,7 @@
 package xyz.dev3k.ateneo2;
 
+import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -8,6 +10,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -71,24 +74,25 @@ public class AnalysisActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
-    public void etiquetarImagen(){
+    public void etiquetarImagen() {
         labeler.process(imageInput)
                 .addOnSuccessListener(new OnSuccessListener<List<ImageLabel>>() {
                     @Override
                     public void onSuccess(List<ImageLabel> labels) {
-                        Toast.makeText(AnalysisActivity.this,"Etiquetas:", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AnalysisActivity.this, "Etiquetas:", Toast.LENGTH_SHORT).show();
                         for (ImageLabel label : labels) {
                             String text = label.getText();
                             float confidence = label.getConfidence();
                             int index = label.getIndex();
-                            Toast.makeText(AnalysisActivity.this,text, Toast.LENGTH_SHORT).show();
+                            Toast.makeText(AnalysisActivity.this, text, Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "Etiqueta: " + labels);
                         }
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        Toast.makeText(AnalysisActivity.this,"Error, no se etiquetó la imagen", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AnalysisActivity.this, "Error, no se etiquetó la imagen", Toast.LENGTH_SHORT).show();
                     }
                 });
     }

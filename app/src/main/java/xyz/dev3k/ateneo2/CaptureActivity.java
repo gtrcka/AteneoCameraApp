@@ -29,9 +29,16 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.label.ImageLabel;
+import com.google.mlkit.vision.label.ImageLabeler;
+import com.google.mlkit.vision.label.ImageLabeling;
+import com.google.mlkit.vision.label.defaults.ImageLabelerOptions;
 
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
@@ -105,7 +112,7 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build();
 
-        cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture, videoCapture/*, imageAnalysis*/);
+        cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture/*, videoCapture*/, imageAnalysis);
     }
 
     @SuppressLint("RestrictedApi")
@@ -133,7 +140,8 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
         Intent intent = new Intent(this, AnalysisActivity.class);
         startActivity(intent);
     }
-        private void capturePhoto() {
+
+    private void capturePhoto() {
 
         long timestamp = System.currentTimeMillis();
 
@@ -212,12 +220,33 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
     public void analyze(ImageProxy imageProxy) {
         @SuppressLint("UnsafeOptInUsageError") Image mediaImage = imageProxy.getImage();
         if (mediaImage != null) {
-            InputImage image =
+            InputImage imageInput =
                     InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
             // Pass image to an ML Kit Vision API
-            // ...
+            ImageLabeler labeler = ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS);
+
+            labeler.process(imageInput)
+                    .addOnSuccessListener(new OnSuccessListener<List<ImageLabel>>() {
+                        @Override
+                        public void onSuccess(List<ImageLabel> labels) {
+                            Toast.makeText(CaptureActivity.this, "Etiquetas:", Toast.LENGTH_SHORT).show();
+                            for (ImageLabel label : labels) {
+                                String text = label.getText();
+                                float confidence = label.getConfidence();
+                                int index = label.getIndex();
+                                Toast.makeText(CaptureActivity.this, text, Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(CaptureActivity.this, "Error, no se etiquetó la imagen", Toast.LENGTH_SHORT).show();
+                        }
+                    });
         }
     }
+
 
    /* public void setAnalizer( ImageAnalysis.Analyzer analizer) {
         this.analizer = analizer;

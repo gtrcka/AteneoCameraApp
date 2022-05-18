@@ -60,4 +60,14 @@
         app:layout_constraintTop_toBottomOf="@+id/lbl_el_ateneo"
         app:srcCompat="@drawable/ateneo" />
 
+    <Button
+        android:id="@+id/button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:onClick="launchAnalysisActivity"
+        android:text="Etiquetar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_folder" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

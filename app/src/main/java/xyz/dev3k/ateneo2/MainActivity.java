@@ -30,15 +30,21 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
+    public void launchAnalysisActivity(View view) {
+        Intent intent = new Intent(this, AnalysisActivity.class);
+        startActivity(intent);
+    }
+
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void verificarPermisos() {
         int permisoCamera = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
         int permisoMicrophone = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
         int permisoWriteStorage =ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        if (permisoWriteStorage == PackageManager.PERMISSION_GRANTED &&permisoCamera == PackageManager.PERMISSION_GRANTED && permisoMicrophone == PackageManager.PERMISSION_GRANTED ){
+        int permisoReadStorage =ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
+        if (permisoWriteStorage == PackageManager.PERMISSION_GRANTED &&permisoCamera == PackageManager.PERMISSION_GRANTED && permisoMicrophone == PackageManager.PERMISSION_GRANTED && permisoReadStorage == PackageManager.PERMISSION_GRANTED){
 
         }else{
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO}, REQUEST_CODE);
+            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO}, REQUEST_CODE);
         }
     }
 }

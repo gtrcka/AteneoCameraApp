@@ -8,4 +8,6 @@
     <string name="start_capture">Grabar</string>
     <string name="stop_capture">Parar</string>
     <string name="btn_file_text">File</string>
+    <string name="lbl_analysis_activity">Analisis de imágen</string>
+    <string name="lbl_capture_activity">Capturar</string>
 </resources>

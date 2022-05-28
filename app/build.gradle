@@ -50,4 +50,7 @@ dependencies {
     // Text features
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.0'
 
+    //Image labeling
+    implementation 'com.google.mlkit:image-labeling:17.0.7'
+
 }

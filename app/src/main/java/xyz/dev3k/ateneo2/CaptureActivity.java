@@ -2,10 +2,8 @@ package xyz.dev3k.ateneo2;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
-import androidx.camera.core.CameraState;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureException;
@@ -20,28 +18,30 @@ import androidx.lifecycle.LifecycleOwner;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.content.ContentResolver;
 import android.content.ContentValues;
-import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.net.Uri;
-import android.os.Build;
+import android.media.Image;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.label.ImageLabel;
+import com.google.mlkit.vision.label.ImageLabeler;
+import com.google.mlkit.vision.label.ImageLabeling;
+import com.google.mlkit.vision.label.defaults.ImageLabelerOptions;
+import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.TextRecognizer;
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 
@@ -50,7 +50,7 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
     private ListenableFuture<ProcessCameraProvider> cameraProviderFuture;
 
     PreviewView previewView;
-    Button imageCaptureButton, videoCaptureButton;
+    Button imageCaptureButton, videoCaptureButton, fileButton;
     private ImageCapture imageCapture;
     private VideoCapture videoCapture;
     private ImageAnalysis imageAnalysis;
@@ -63,10 +63,12 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
         setContentView(R.layout.activity_capture);
         imageCaptureButton = findViewById(R.id.image_capture_button);
         videoCaptureButton = findViewById(R.id.video_capture_button);
+        fileButton = findViewById(R.id.btn_file);
         previewView = findViewById(R.id.viewFinder);
 
         imageCaptureButton.setOnClickListener(this);
         videoCaptureButton.setOnClickListener(this);
+        fileButton.setOnClickListener(this);
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(this);
         cameraProviderFuture.addListener(() -> {
@@ -113,9 +115,10 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                 .build();
 
-        cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture, videoCapture/*, imageAnalysis*/);
+        cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture/*, videoCapture*/, imageAnalysis);
     }
 
+    //Switch onClick
     @SuppressLint("RestrictedApi")
     @Override
     public void onClick(View view) {
@@ -132,7 +135,14 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
                     videoCapture.stopRecording();
                 }
                 break;
+            case R.id.btn_file:
+                launchAnalysisActivity();
         }
+    }
+
+    private void launchAnalysisActivity() {
+        Intent intent = new Intent(this, AnalysisActivity.class);
+        startActivity(intent);
     }
 
     private void capturePhoto() {
@@ -211,11 +221,36 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
     }
 
     @Override
-    public void analyze(@NonNull ImageProxy image) {
-        Log.d(TAG, "Analizar " + image.getImageInfo().getTimestamp());
-        //setAnalizer(analizer);
-        image.close();
+    public void analyze(ImageProxy imageProxy) {
+        @SuppressLint("UnsafeOptInUsageError") Image mediaImage = imageProxy.getImage();
+        if (mediaImage != null) {
+            InputImage imageInput =
+                    InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
+            // Pass image to an ML Kit Vision API
+            ImageLabeler labeler = ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS);
+
+            labeler.process(imageInput)
+                    .addOnSuccessListener(new OnSuccessListener<List<ImageLabel>>() {
+                        @Override
+                        public void onSuccess(List<ImageLabel> labels) {
+                            Toast.makeText(CaptureActivity.this, "Etiquetas:", Toast.LENGTH_SHORT).show();
+                            for (ImageLabel label : labels) {
+                                String text = label.getText();
+                                float confidence = label.getConfidence();
+                                int index = label.getIndex();
+                                Toast.makeText(CaptureActivity.this, text, Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    })
+                    .addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception e) {
+                            Toast.makeText(CaptureActivity.this, "Error, no se etiquetó la imagen", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+        }
     }
+
 
    /* public void setAnalizer( ImageAnalysis.Analyzer analizer) {
         this.analizer = analizer;

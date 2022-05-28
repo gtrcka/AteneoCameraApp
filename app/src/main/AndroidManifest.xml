@@ -2,8 +2,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="xyz.dev3k.ateneo2">
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
     <uses-feature android:name="android.hardware.camera.any" />
+
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
@@ -15,9 +18,18 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Ateneo2">
         <activity
+            android:name=".AnalysisActivity"
+            android:exported="false"
+            android:label="@string/lbl_analysis_activity"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="com.google.mlkit.vision.DEPENDENCIES"
+                android:value="ocr" />
+        </activity>
+        <activity
             android:name=".CaptureActivity"
             android:exported="false"
-            android:label="Capturar"
+            android:label="@string/lbl_capture_activity"
             android:parentActivityName=".MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

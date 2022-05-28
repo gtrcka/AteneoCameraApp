@@ -5,8 +5,6 @@ import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-
-import android.accounts.AccountManagerFuture;
 import android.content.Intent;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -15,7 +13,6 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
@@ -28,6 +25,11 @@ import com.google.mlkit.vision.label.ImageLabel;
 import com.google.mlkit.vision.label.ImageLabeler;
 import com.google.mlkit.vision.label.ImageLabeling;
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions;
+import com.google.mlkit.vision.pose.Pose;
+import com.google.mlkit.vision.pose.PoseDetection;
+import com.google.mlkit.vision.pose.PoseDetector;
+import com.google.mlkit.vision.pose.PoseLandmark;
+import com.google.mlkit.vision.pose.accurate.AccuratePoseDetectorOptions;
 import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
@@ -40,11 +42,18 @@ public class AnalysisActivity extends AppCompatActivity implements View.OnClickL
     private ImageView image;
     private InputImage imageInput;
     private Task<Text> result;
+    private Task<Pose> resultPoses;
     // To use default options:
     ImageLabeler labeler = ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS);
 
     TextRecognizer recognizer =
             TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);
+
+    AccuratePoseDetectorOptions options =
+            new AccuratePoseDetectorOptions.Builder()
+                    .setDetectorMode(AccuratePoseDetectorOptions.SINGLE_IMAGE_MODE)
+                    .build();
+    PoseDetector poseDetector = PoseDetection.getClient(options);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,9 +64,11 @@ public class AnalysisActivity extends AppCompatActivity implements View.OnClickL
 
         Button buttonAnalyzer = findViewById(R.id.button_analizer);
         Button buttonTextRecognizer = findViewById(R.id.button_text_recognizer);
+        Button buttonPosesDetect = findViewById(R.id.button_poses_detect);
 
         buttonTextRecognizer.setOnClickListener(this);
         buttonAnalyzer.setOnClickListener(this);
+        buttonPosesDetect.setOnClickListener(this);
 
     }
 
@@ -90,6 +101,9 @@ public class AnalysisActivity extends AppCompatActivity implements View.OnClickL
             case R.id.button_text_recognizer:
                 runTextRecognizer();
                 break;
+            case R.id.button_poses_detect:
+                runDetectPoses();
+                break;
         }
     }
 
@@ -116,8 +130,8 @@ public class AnalysisActivity extends AppCompatActivity implements View.OnClickL
                 });
     }
 
-    private void runTextRecognizer(){
-         result =
+    private void runTextRecognizer() {
+        result =
                 recognizer.process(imageInput)
                         .addOnSuccessListener(new OnSuccessListener<Text>() {
                             @Override
@@ -135,7 +149,7 @@ public class AnalysisActivity extends AppCompatActivity implements View.OnClickL
                                 });
     }
 
-    private void processTextRecognitionResult(Text result){
+    private void processTextRecognitionResult(Text result) {
         String resultText = result.getText();
         Toast.makeText(AnalysisActivity.this, resultText, Toast.LENGTH_SHORT).show();
         for (Text.TextBlock block : result.getTextBlocks()) {
@@ -152,6 +166,73 @@ public class AnalysisActivity extends AppCompatActivity implements View.OnClickL
                     Rect elementFrame = element.getBoundingBox();
                 }
             }
+        }
+    }
+
+    private void runDetectPoses() {
+        resultPoses =
+                poseDetector.process(imageInput)
+                        .addOnSuccessListener(
+                                new OnSuccessListener<Pose>() {
+                                    @Override
+                                    public void onSuccess(Pose pose) {
+                                        Toast.makeText(AnalysisActivity.this, "La pose se detectó ok!!", Toast.LENGTH_SHORT).show();
+                                        // Get all PoseLandmarks. If no person was detected, the list will be empty
+                                        List<PoseLandmark> allPoseLandmarks = pose.getAllPoseLandmarks();
+
+                                        // Or get specific PoseLandmarks individually. These will all be null if no person
+                                        // was detected
+                                        PoseLandmark leftShoulder = pose.getPoseLandmark(PoseLandmark.LEFT_SHOULDER);
+                                        PoseLandmark rightShoulder = pose.getPoseLandmark(PoseLandmark.RIGHT_SHOULDER);
+                                        PoseLandmark leftElbow = pose.getPoseLandmark(PoseLandmark.LEFT_ELBOW);
+                                        PoseLandmark rightElbow = pose.getPoseLandmark(PoseLandmark.RIGHT_ELBOW);
+                                        PoseLandmark leftWrist = pose.getPoseLandmark(PoseLandmark.LEFT_WRIST);
+                                        PoseLandmark rightWrist = pose.getPoseLandmark(PoseLandmark.RIGHT_WRIST);
+                                        PoseLandmark leftHip = pose.getPoseLandmark(PoseLandmark.LEFT_HIP);
+                                        PoseLandmark rightHip = pose.getPoseLandmark(PoseLandmark.RIGHT_HIP);
+                                        PoseLandmark leftKnee = pose.getPoseLandmark(PoseLandmark.LEFT_KNEE);
+                                        PoseLandmark rightKnee = pose.getPoseLandmark(PoseLandmark.RIGHT_KNEE);
+                                        PoseLandmark leftAnkle = pose.getPoseLandmark(PoseLandmark.LEFT_ANKLE);
+                                        PoseLandmark rightAnkle = pose.getPoseLandmark(PoseLandmark.RIGHT_ANKLE);
+                                        PoseLandmark leftPinky = pose.getPoseLandmark(PoseLandmark.LEFT_PINKY);
+                                        PoseLandmark rightPinky = pose.getPoseLandmark(PoseLandmark.RIGHT_PINKY);
+                                        PoseLandmark leftIndex = pose.getPoseLandmark(PoseLandmark.LEFT_INDEX);
+                                        PoseLandmark rightIndex = pose.getPoseLandmark(PoseLandmark.RIGHT_INDEX);
+                                        PoseLandmark leftThumb = pose.getPoseLandmark(PoseLandmark.LEFT_THUMB);
+                                        PoseLandmark rightThumb = pose.getPoseLandmark(PoseLandmark.RIGHT_THUMB);
+                                        PoseLandmark leftHeel = pose.getPoseLandmark(PoseLandmark.LEFT_HEEL);
+                                        PoseLandmark rightHeel = pose.getPoseLandmark(PoseLandmark.RIGHT_HEEL);
+                                        PoseLandmark leftFootIndex = pose.getPoseLandmark(PoseLandmark.LEFT_FOOT_INDEX);
+                                        PoseLandmark rightFootIndex = pose.getPoseLandmark(PoseLandmark.RIGHT_FOOT_INDEX);
+                                        PoseLandmark nose = pose.getPoseLandmark(PoseLandmark.NOSE);
+                                        PoseLandmark leftEyeInner = pose.getPoseLandmark(PoseLandmark.LEFT_EYE_INNER);
+                                        PoseLandmark leftEye = pose.getPoseLandmark(PoseLandmark.LEFT_EYE);
+                                        PoseLandmark leftEyeOuter = pose.getPoseLandmark(PoseLandmark.LEFT_EYE_OUTER);
+                                        PoseLandmark rightEyeInner = pose.getPoseLandmark(PoseLandmark.RIGHT_EYE_INNER);
+                                        PoseLandmark rightEye = pose.getPoseLandmark(PoseLandmark.RIGHT_EYE);
+                                        PoseLandmark rightEyeOuter = pose.getPoseLandmark(PoseLandmark.RIGHT_EYE_OUTER);
+                                        PoseLandmark leftEar = pose.getPoseLandmark(PoseLandmark.LEFT_EAR);
+                                        PoseLandmark rightEar = pose.getPoseLandmark(PoseLandmark.RIGHT_EAR);
+                                        PoseLandmark leftMouth = pose.getPoseLandmark(PoseLandmark.LEFT_MOUTH);
+                                        PoseLandmark rightMouth = pose.getPoseLandmark(PoseLandmark.RIGHT_MOUTH);
+
+                                        printPoseLandmark(allPoseLandmarks);
+                                    }
+                                })
+                        .addOnFailureListener(
+                                new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(AnalysisActivity.this, "Error, no se detectó la pose", Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+    }
+
+    private void printPoseLandmark(List<PoseLandmark> allPoseLandmarks){
+        for (PoseLandmark pose: allPoseLandmarks) {
+            pose.toString();
+            pose.getPosition().toString();
+            Toast.makeText(AnalysisActivity.this, pose.getPosition().toString(), Toast.LENGTH_SHORT).show();
         }
     }
 }

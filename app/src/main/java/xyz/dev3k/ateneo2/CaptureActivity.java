@@ -37,6 +37,9 @@ import com.google.mlkit.vision.label.ImageLabel;
 import com.google.mlkit.vision.label.ImageLabeler;
 import com.google.mlkit.vision.label.ImageLabeling;
 import com.google.mlkit.vision.label.defaults.ImageLabelerOptions;
+import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.TextRecognizer;
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -115,6 +118,7 @@ public class CaptureActivity extends AppCompatActivity implements View.OnClickLi
         cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, preview, imageCapture/*, videoCapture*/, imageAnalysis);
     }
 
+    //Switch onClick
     @SuppressLint("RestrictedApi")
     @Override
     public void onClick(View view) {

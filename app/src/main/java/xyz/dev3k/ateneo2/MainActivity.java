@@ -24,17 +24,18 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         verificarPermisos();
     }
-
+    //Intent CaptureActivity
     public void launchCaptureActivity(View view) {
         Intent intent = new Intent(this, CaptureActivity.class);
         startActivity(intent);
     }
-
+    //Intent AnalysisActivity
     public void launchAnalysisActivity(View view) {
         Intent intent = new Intent(this, AnalysisActivity.class);
         startActivity(intent);
     }
 
+    //Solicitud de permisos
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void verificarPermisos() {
         int permisoCamera = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);

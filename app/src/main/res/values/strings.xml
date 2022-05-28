@@ -8,6 +8,12 @@
     <string name="start_capture">Grabar</string>
     <string name="stop_capture">Parar</string>
     <string name="btn_file_text">File</string>
-    <string name="lbl_analysis_activity">Analisis de imágen</string>
+    <string name="lbl_analysis_activity">Analisis de imagen</string>
     <string name="lbl_capture_activity">Capturar</string>
+    <string name="btn_reconocer_texto">Reconocer Texto</string>
+    <string name="btn_etiquetar">Etiquetar</string>
+    <string name="select_image_for_text_recognition">Seleccionar imagen</string>
+    <string name="find_text_button">Reconocer Texto</string>
+    <string name="find_face_contour_button">Reconocer cara</string>
+
 </resources>

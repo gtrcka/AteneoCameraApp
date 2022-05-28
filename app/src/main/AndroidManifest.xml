@@ -22,9 +22,9 @@
             android:exported="false"
             android:label="@string/lbl_analysis_activity"
             android:parentActivityName=".MainActivity">
-        <meta-data
-            android:name="android.support.PARENT_ACTIVITY"
-            android:value="xyz.dev3k.ateneo2.MainActivity"/>
+            <meta-data
+                android:name="com.google.mlkit.vision.DEPENDENCIES"
+                android:value="ocr" />
         </activity>
         <activity
             android:name=".CaptureActivity"

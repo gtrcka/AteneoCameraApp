@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "173420161811",
+    "firebase_url": "https://reconocimiento-de-imagen-644f0-default-rtdb.firebaseio.com",
+    "project_id": "reconocimiento-de-imagen-644f0",
+    "storage_bucket": "reconocimiento-de-imagen-644f0.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:173420161811:android:53d020f57a5244c309c8e6",
+        "android_client_info": {
+          "package_name": "xyz.dev3k.ateneo2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "173420161811-thc97m9uimuosvakqvvu4e25vms69u2k.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcVSt_hG1OfiKoR4quo2Rjs15YR0C2nFM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "173420161811-thc97m9uimuosvakqvvu4e25vms69u2k.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

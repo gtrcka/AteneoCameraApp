@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -52,5 +53,12 @@ dependencies {
 
     //Image labeling
     implementation 'com.google.mlkit:image-labeling:17.0.7'
+
+    //Detect Poses
+    implementation 'com.google.mlkit:pose-detection-accurate:18.0.0-beta2'
+
+    //Firebase
+    implementation 'com.google.firebase:firebase-database:20.0.5'
+    implementation platform('com.google.firebase:firebase-bom:30.0.0')
 
 }

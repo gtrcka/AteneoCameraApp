@@ -20,6 +20,9 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.label.ImageLabel;
 import com.google.mlkit.vision.label.ImageLabeler;
@@ -36,13 +39,19 @@ import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
+import xyz.dev3k.ateneo2.model.ImagenEtiquetada;
 
 public class AnalysisActivity extends AppCompatActivity implements View.OnClickListener {
     private ImageView image;
     private InputImage imageInput;
     private Task<Text> result;
     private Task<Pose> resultPoses;
+    FirebaseDatabase database;
+    DatabaseReference myRef;
     // To use default options:
     ImageLabeler labeler = ImageLabeling.getClient(ImageLabelerOptions.DEFAULT_OPTIONS);
 
@@ -70,6 +79,14 @@ public class AnalysisActivity extends AppCompatActivity implements View.OnClickL
         buttonAnalyzer.setOnClickListener(this);
         buttonPosesDetect.setOnClickListener(this);
 
+        inicializarFirebase();
+
+    }
+
+    private void inicializarFirebase() {
+        FirebaseApp.initializeApp(this);
+        database = FirebaseDatabase.getInstance();
+        myRef = database.getReference();
     }
 
     public void cargarImagen() {
@@ -84,6 +101,7 @@ public class AnalysisActivity extends AppCompatActivity implements View.OnClickL
         if (resultCode == RESULT_OK) {
             Uri path = data.getData();
             image.setImageURI(path);
+
             try {
                 imageInput = InputImage.fromFilePath(this, path);
             } catch (IOException e) {
@@ -117,9 +135,12 @@ public class AnalysisActivity extends AppCompatActivity implements View.OnClickL
                             String text = label.getText();
                             float confidence = label.getConfidence();//grado de confianza de la etiqueta
                             int index = label.getIndex();
-                            Toast.makeText(AnalysisActivity.this, text, Toast.LENGTH_SHORT).show();
-                            Log.d(TAG, "Etiqueta: " + labels);
+                            //Toast.makeText(AnalysisActivity.this, text, Toast.LENGTH_SHORT).show();
+                            //Log.d(TAG, "Etiqueta: " + labels);
                         }
+                        ImagenEtiquetada imagenEtiquetada = new ImagenEtiquetada(UUID.randomUUID().toString(),labels);
+                        myRef.child("ImagenesEtiquetadas").child(imagenEtiquetada.getId()).setValue(imagenEtiquetada);
+                        Toast.makeText(AnalysisActivity.this, "Imagen etiquetada y guardada", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
